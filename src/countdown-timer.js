@@ -1,12 +1,14 @@
-import { interval } from "rxjs";
-import { filter, mapTo, scan } from "rxjs/operators";
+import { fromEvent, interval } from "rxjs";
+import { mapTo, scan, takeUntil, takeWhile } from "rxjs/operators";
 
 // elements
 const countdownEl = document.getElementById("countdown");
 const messageEl = document.getElementById("message");
+const abortEl = document.getElementById("abort");
 
 // counter
 const counter$ = interval(1000);
+const abort$ = fromEvent(abortEl, "click");
 
 counter$
   .pipe(
@@ -14,7 +16,9 @@ counter$
     scan((sum, current) => {
       return sum + current;
     }, 10),
-    filter((value) => value >= 0)
+    // tap(console.log),
+    takeWhile((value) => value >= 0),
+    takeUntil(abort$)
   )
   .subscribe((value) => {
     countdownEl.innerText = value;
